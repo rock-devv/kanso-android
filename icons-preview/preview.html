@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kanso icon candidates</title>
+<style>
+	body {
+		font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+		margin: 0;
+		padding: 32px;
+		background: #e8e6e1;
+		color: #222;
+	}
+	h1 { font-weight: 600; margin: 0 0 6px; }
+	p.sub { margin: 0 0 28px; opacity: .6; }
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 20px;
+		max-width: 980px;
+	}
+	.card {
+		background: #fff;
+		border-radius: 14px;
+		padding: 18px;
+		box-shadow: 0 1px 4px rgba(0,0,0,.12);
+	}
+	.card h2 { font-size: 14px; margin: 0 0 4px; }
+	.card p { font-size: 12px; opacity: .55; margin: 0 0 14px; }
+	.bg {
+		display: flex;
+		align-items: flex-end;
+		gap: 18px;
+		padding: 16px;
+		border-radius: 10px;
+		margin-top: 12px;
+	}
+	.bg.light { background: #fdfdfd; border: 1px solid #eee; }
+	.bg.dark  { background: #111; }
+	.bg img { display: block; border-radius: 22%; }
+	.name { font-size: 11px; opacity: .5; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Kanso icon candidates</h1>
+<p class="sub">Shown at 144 / 96 / 48 px on light and dark backgrounds — launcher-realistic sizes.</p>
+
+<div class="grid">
+	<div class="card">
+		<h2>A — Ensō</h2>
+		<p>One imperfect ink-brush circle. Rare, calm, unmistakably zen.</p>
+		<div class="bg light"><img src="A-enso.png" width="144"><img src="A-enso.png" width="96"><img src="A-enso.png" width="48"></div>
+		<div class="bg dark"><img src="A-enso.png" width="144"><img src="A-enso.png" width="96"><img src="A-enso.png" width="48"></div>
+		<div class="name">recommended</div>
+	</div>
+
+	<div class="card">
+		<h2>B — Leaf</h2>
+		<p>Your original idea, done deliberately. Friendly; but crowded territory.</p>
+		<div class="bg light"><img src="B-leaf.png" width="144"><img src="B-leaf.png" width="96"><img src="B-leaf.png" width="48"></div>
+		<div class="bg dark"><img src="B-leaf.png" width="144"><img src="B-leaf.png" width="96"><img src="B-leaf.png" width="48"></div>
+	</div>
+
+	<div class="card">
+		<h2>C — Ensō + leaf</h2>
+		<p>The ensō with a leaf resting inside — identity plus your nature nod.</p>
+		<div class="bg light"><img src="C-enso-leaf.png" width="144"><img src="C-enso-leaf.png" width="96"><img src="C-enso-leaf.png" width="48"></div>
+		<div class="bg dark"><img src="C-enso-leaf.png" width="144"><img src="C-enso-leaf.png" width="96"><img src="C-enso-leaf.png" width="48"></div>
+	</div>
+
+	<div class="card">
+		<h2>D — Nib (current)</h2>
+		<p>The existing pen-nib icon, for comparison.</p>
+		<div class="bg light"><img src="D-nib-current.png" width="144"><img src="D-nib-current.png" width="96"><img src="D-nib-current.png" width="48"></div>
+		<div class="bg dark"><img src="D-nib-current.png" width="144"><img src="D-nib-current.png" width="96"><img src="D-nib-current.png" width="48"></div>
+	</div>
+</div>
+</body>
+</html>
