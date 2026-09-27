@@ -50,7 +50,12 @@ echo "[4/6] Dexing..."
 
 echo "[5/6] Packaging..."
 cp build/zenpen-base.apk build/zenpen-unsigned.apk
-cd app/assets && zip -q -r ../../build/zenpen-unsigned.apk www && cd ../..
+# Web files must live under assets/ in the APK - that is where Android's
+# file:///android_asset/ URL scheme reads from. Stage them so the archive
+# contains assets/www/... (zip stores the paths as given).
+mkdir -p build/staging/assets
+cp -r app/assets/www build/staging/assets/www
+cd build/staging && zip -q -r ../zenpen-unsigned.apk assets && cd ../..
 cd build && zip -q -j zenpen-unsigned.apk dex/classes.dex && cd ..
 "$BT/zipalign" -f 4 build/zenpen-unsigned.apk build/zenpen-aligned.apk
 
