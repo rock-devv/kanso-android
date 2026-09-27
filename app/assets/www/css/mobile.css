@@ -1,0 +1,191 @@
+/*********************************************
+ * MOBILE ADAPTATIONS
+ * Keeps ZenPen's desktop look untouched, and
+ * makes the layout work on phone screens.
+ *********************************************/
+
+/*********************************************
+ * SCROLLBARS
+ * Hidden on every screen (editor + notes, any
+ * width) while scrolling itself still works.
+ *********************************************/
+
+* {
+	scrollbar-width: none;		/* Firefox */
+	-ms-overflow-style: none;	/* legacy Edge */
+}
+
+*::-webkit-scrollbar {
+	display: none;				/* Chromium / WebKit (WebView) */
+	width: 0;
+	height: 0;
+}
+
+/* Allow the page to shrink below the 800px desktop minimum */
+@media (max-width: 800px) {
+	body {
+		min-width: 0;
+	}
+
+	/* Modals: never wider than the screen, centered with a transform
+	   instead of fixed negative margins */
+	.modal {
+		width: calc(100vw - 30px);
+		max-width: 400px;
+		left: 50%;
+		transform: translateX(-50%);
+		margin-left: 0;
+	}
+
+	.saveoverlay {
+		margin-top: -100px;
+		top: 50%;
+		bottom: auto;
+	}
+
+	.saveoverlay .saveselection {
+		margin-top: 12px;
+	}
+
+	.saveoverlay .saveselection span {
+		display: inline-block;
+		padding: 6px 10px;
+	}
+
+	/* A little breathing room on the left so the on-screen keyboard
+	   and edge gestures don't cover the text */
+	section {
+		padding-left: 4px;
+	}
+
+	/*********************************************
+	 * BOTTOM BUTTON BAR
+	 * Replaces the floating left-edge rail: the controls sit in a fixed
+	 * bar at the bottom, and the text column gets matching padding so
+	 * they never overlap.
+	 *********************************************/
+
+	.ui {
+		width: 100%;
+		padding: 0;
+		top: auto;
+		bottom: 0;
+	}
+
+	.ui .wrapper {
+		/* Fluid: grows with large system fonts instead of clipping */
+		height: auto;
+		min-height: 64px;
+		padding: 6px 0;
+		box-sizing: border-box;
+		text-align: center;
+		transition: transform 250ms ease-in-out, opacity 250ms ease-in-out;
+	}
+
+	/* Keyboard open: slide the bar out of the way (native reports the
+	   real IME state; a resize heuristic covers plain-browser use) */
+	.ui.bar-hidden .wrapper {
+		transform: translateY(100%);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.ui .top {
+		position: static;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 28px;
+	}
+
+	.ui button {
+		opacity: 0.45;
+		width: 48px;
+		height: 48px;
+		font-size: 24px;
+	}
+
+	.ui button.notes-back,
+	.ui button.share {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.ui button:hover {
+		opacity: 1;
+	}
+
+	/* Blend the bar into the page instead of drawing a seam */
+	.yin .ui .top {
+		background: #fdfdfd;
+	}
+
+	.yang .ui .top {
+		background: #111;
+	}
+
+	/* Narrow phones: 6×48px buttons + gaps would overflow 360px */
+	@media (max-width: 415px) {
+		.ui .top {
+			gap: 14px;
+		}
+	}
+
+	@media (max-width: 370px) {
+		.ui .top {
+			gap: 7px;
+		}
+
+		.ui button {
+			width: 42px;
+			height: 46px;
+		}
+	}
+
+	@media (max-width: 330px) {
+		.ui .top {
+			gap: 3px;
+		}
+
+		.ui button {
+			width: 38px;
+		}
+	}
+
+	/* Keep the writing area clear of the bar (incl. iOS home bar).
+	   --zen-bar-h is kept up to date by JS (the bar grows with large
+	   system fonts); 24px is extra scroll clearance. */
+	body {
+		padding-bottom: calc(var(--zen-bar-h, 64px) + 24px + env(safe-area-inset-bottom, 0px));
+	}
+
+	/* Modals grow with their content — fixed heights clip at 1.5x fonts */
+	.modal {
+		height: auto;
+		min-height: 101px;
+	}
+
+	.saveoverlay {
+		height: auto;
+		min-height: 170px;
+		padding-bottom: 18px;
+	}
+
+	section {
+		padding-bottom: 30px;
+	}
+}
+
+/* Very small screens: drop the bubble out of url-mode width so it fits */
+@media (max-width: 330px) {
+	.options.url-mode {
+		width: calc(100vw - 20px);
+		margin-left: calc(-1 * (100vw - 20px) / 2);
+	}
+
+	.options.url-mode input {
+		width: calc(100vw - 60px);
+	}
+}

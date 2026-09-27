@@ -1,0 +1,71 @@
+name: Build ZenPen APK
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Android SDK build tools
+        run: |
+          CMDTOOLS_ZIP="$RUNNER_TEMP/cmdtools.zip"
+          curl -sSL -o "$CMDTOOLS_ZIP" \
+            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          mkdir -p "$HOME/android-sdk/cmdline-tools"
+          unzip -q "$CMDTOOLS_ZIP" -d "$HOME/android-sdk/cmdline-tools"
+          mv "$HOME/android-sdk/cmdline-tools/cmdline-tools" \
+             "$HOME/android-sdk/cmdline-tools/latest"
+          yes | "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" \
+            --sdk_root="$HOME/android-sdk" --licenses >/dev/null
+          yes | "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" \
+            --sdk_root="$HOME/android-sdk" \
+            "platforms;android-34" "build-tools;37.0.0" >/dev/null
+          echo "SDK=$HOME/android-sdk" >> "$GITHUB_ENV"
+
+      - name: Restore signing keystore from secrets
+        env:
+          KEYSTORE_B64: ${{ secrets.ZENPEN_KEYSTORE_B64 }}
+          KEYSTORE_PASS: ${{ secrets.ZENPEN_KEYSTORE_PASS }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > release.keystore
+            echo "KEYSTORE=release.keystore" >> "$GITHUB_ENV"
+            echo "KS_PASS=$KEYSTORE_PASS" >> "$GITHUB_ENV"
+            echo "KEY_PASS=$KEYSTORE_PASS" >> "$GITHUB_ENV"
+            echo "Signing with the secret keystore."
+          else
+            echo "No ZENPEN_KEYSTORE_B64 secret set; CI will generate an"
+            echo "ephemeral keystore (reinstall needed on each update)."
+          fi
+
+      - name: Build APK
+        run: ./build.sh
+
+      - name: Verify APK signature
+        run: "\"$SDK/build-tools/37.0.0/apksigner\" verify --verbose Kanso.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kanso-apk
+          path: Kanso.apk
+
+      # Optional: attach the APK to a GitHub Release when a tag is pushed.
+      # To enable, uncomment this step.
+      # - name: Release on tag
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: ZenPen.apk

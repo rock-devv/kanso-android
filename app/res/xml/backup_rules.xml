@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Auto Backup rules (Android 6-11). The whole files/ directory is
+	uploaded, which carries zenpen-notes.json (the notes mirror).
+	Excluded: caches (worthless after restore) and the WebView's own
+	databases (leveldb files are fragile across reinstalls; notes are
+	restored from the JSON mirror instead).
+-->
+<full-backup-content>
+	<include domain="file" path="." />
+	<include domain="sharedpref" path="." />
+	<exclude domain="file" path="cache" />
+	<exclude domain="database" path="." />
+	<exclude domain="sharedpref" path="com.google" />
+</full-backup-content>

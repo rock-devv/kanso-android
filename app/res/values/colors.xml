@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- ZenPen's paper white -->
+	<color name="zen_background">#FDFDFD</color>
+</resources>

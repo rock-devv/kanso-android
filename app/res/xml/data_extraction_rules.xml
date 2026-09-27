@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Data extraction rules (Android 12+): same policy as backup_rules.xml —
+	back up the notes mirror in files/ plus prefs, skip caches and the
+	WebView's internal databases. deviceTransfer keeps notes on
+	USB/cable-to-cable migration between phones.
+-->
+<data-extraction-rules>
+	<cloud-backup>
+		<include domain="file" path="." />
+		<include domain="sharedpref" path="." />
+		<exclude domain="file" path="cache" />
+		<exclude domain="database" path="." />
+	</cloud-backup>
+	<device-transfer>
+		<include domain="file" path="." />
+		<include domain="sharedpref" path="." />
+		<exclude domain="file" path="cache" />
+		<exclude domain="database" path="." />
+	</device-transfer>
+</data-extraction-rules>

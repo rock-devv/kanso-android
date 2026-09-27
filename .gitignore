@@ -1,0 +1,18 @@
+# Signing material — never commit the release keystore.
+# (The dev keystore zenpen.keystore is also ignored: it's auto-generated
+# and only used for local testing; CI uses its own.)
+*.keystore
+*.jks
+
+# Android SDK / build outputs
+/sdk/
+/build/
+*.apk
+*.idsig
+
+# Upstream ZenPen reference copy (fetched, not part of the app)
+/zenpen-ref/
+
+# Logs and scratch
+*.log
+.freebuff/
