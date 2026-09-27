@@ -16,8 +16,8 @@
 		<link href="css/lora/lora.css" rel="stylesheet" type="text/css" />
 		<link href="css/style.css" rel="stylesheet" />
 		<link href="css/fonts.css" rel="stylesheet" />
-		<link href="css/mobile.css?v=9" rel="stylesheet" />
-		<link href="css/drawer.css?v=9" rel="stylesheet" />
+		<link href="css/mobile.css?v=10" rel="stylesheet" />
+		<link href="css/drawer.css?v=10" rel="stylesheet" />
 	</head>
 
 	<body class="yin">
@@ -79,15 +79,13 @@
 					<button class="save useicons" title="Save Text">
 						&#xe003;
 					</button>
-				<button class="share" title="Share note">
+				<button class="math" title="Math mode">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none"
 						stroke="currentColor" stroke-width="2" stroke-linecap="round"
 						stroke-linejoin="round">
-						<circle cx="18" cy="5" r="3" />
-						<circle cx="6" cy="12" r="3" />
-						<circle cx="18" cy="19" r="3" />
-						<path d="M8.6 13.5l6.8 4" />
-						<path d="M15.4 6.5l-6.8 4" />
+						<line x1="5" y1="9" x2="15" y2="9" />
+						<line x1="20" y1="4" x2="12" y2="20" />
+						<line x1="16" y1="17" x2="22" y2="17" />
 					</svg>
 				</button>
 				</div>
@@ -156,7 +154,10 @@
 
 		<section>
 			<header contenteditable="true" class="header"></header>
-			<article contenteditable="true" class="content"></article>
+			<div class="content-wrap">
+				<article contenteditable="true" class="content"></article>
+				<div class="math-overlay" aria-hidden="true"></div>
+			</div>
 		</section>
 
 		<!-- LIBS -->
@@ -165,13 +166,14 @@
 		<script src="js/libs/screenfull.min.js"></script>
 
 		<!-- JS -->
-		<script src="js/zenpen-storage.js"></script>
+		<script src="js/zenpen-storage.js?v=10"></script>
 		<script src="js/default.js"></script>
 		<script src="js/utils.js"></script>
+		<script src="js/inline-math.js?v=10"></script>
 		<script src="js/editor.js"></script>
 		<script src="js/ui.js"></script>
-		<script src="js/mobile.js?v=9"></script>
-		<script src="js/drawer.js?v=9"></script>
+		<script src="js/mobile.js?v=10"></script>
+		<script src="js/drawer.js?v=10"></script>
 		<script type="text/javascript">
 			// Initiate ZenPen
 			ZenPen.editor.init();

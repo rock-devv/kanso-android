@@ -33,6 +33,11 @@ prompted). Requires Android 7.0+.
 - **Native-feeling text selection** — Android's copy/cut menu is
   suppressed while Kanso's own format bubble (bold, italic, quote, link)
   opens below your selection, clear of the system handles.
+- **Inline math** (optional, per note) — tap the ± button and lines with
+  calculations show a faint `= 42` ghost result as you type: `20% of 150`,
+  `rent = 1800` then `rent / 3`, `150 + 10%`. Understands your locale's
+  number format, shows nothing in prose lines, and stores only what you
+  typed — results are overlay text, never part of the note.
 - **Auto Backup** — notes mirror to `files/zenpen-notes.json` and ride
   Android Auto Backup / device transfer; a fresh install re-imports them
   automatically (the live store always wins, so restores never clobber

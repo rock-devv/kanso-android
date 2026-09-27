@@ -146,6 +146,20 @@
 		return entry;
 	}
 
+	// Per-note inline-math mode. Absent/false = off, so existing notes
+	// and old backups need no migration.
+	function setMath(id, on) {
+		var meta = readMeta();
+		if (!meta[id]) return;
+		meta[id].math = !!on;
+		writeMeta(meta);
+	}
+
+	function mathEnabled(id) {
+		var entry = readMeta()[id];
+		return !!(entry && entry.math);
+	}
+
 	function deleteNote(id) {
 		var meta = readMeta();
 		var backup = {
@@ -206,7 +220,8 @@
 					modified: note.modified,
 					pinned: !!note.pinned,
 					headerHtml: realStorage.getItem(noteKey(note.id, 'header')) || '',
-					contentHtml: realStorage.getItem(noteKey(note.id, 'content')) || ''
+					contentHtml: realStorage.getItem(noteKey(note.id, 'content')) || '',
+					math: !!note.math
 				};
 			}),
 			settings: {
@@ -266,7 +281,8 @@
 				header: note.header || 'Untitled',
 				created: note.created || Date.now(),
 				modified: note.modified || Date.now(),
-				pinned: !!note.pinned
+				pinned: !!note.pinned,
+				math: !!note.math
 			};
 			if (note.headerHtml) {
 				realStorage.setItem(noteKey(note.id, 'header'), note.headerHtml);
@@ -314,6 +330,8 @@
 		deleteNote: deleteNote,
 		restoreNote: restoreNote,
 		setPinned: setPinned,
+		setMath: setMath,
+		mathEnabled: mathEnabled,
 		// Runs automatically at load; exposed for a manual "restore"
 		// action and for tests.
 		importBackup: importBackup,

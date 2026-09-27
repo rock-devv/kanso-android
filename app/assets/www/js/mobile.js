@@ -291,37 +291,261 @@
 		} catch (e) { /* leaving anyway */ }
 	}
 
-	// Plain-text rendering of the current note: title as subject, body
-	// paragraphs as lines. Mirrors ZenPen's "Plain Text" save format.
-	function shareSubject() {
+	// ----------------------------------------------------------------
+	// Inline math mode: per-note flag, ghost results overlay.
+	// ----------------------------------------------------------------
+	function mathButton() {
+		return document.querySelector('.ui button.math');
+	}
+
+	function currentMathOn() {
 		try {
-			var header = document.querySelector('.header');
-			var text = header ? header.textContent.replace(/(\t|\n|\r)/gm, '').trim() : '';
-			return text || 'ZenPen note';
+			return window.ZenPenStore &&
+				ZenPenStore.mathEnabled(ZenPenStore.currentNoteId());
 		} catch (e) {
-			return 'ZenPen note';
+			return false;
 		}
 	}
 
-	function shareBodyText() {
-		// Preferred: read from the store (same code path as the notes-list
-		// long-press share; works even if the DOM is in a weird state).
-		try {
-			if (window.ZenPenStore && ZenPenStore.currentNoteId()) {
-				var fromStore = ZenPenStore.notePlainText(ZenPenStore.currentNoteId());
-				if (fromStore) return fromStore;
+	function syncMathButton() {
+		var btn = mathButton();
+		if (btn) btn.classList.toggle('active', currentMathOn());
+	}
+
+	function toggleMathMode() {
+		var id = window.ZenPenStore && ZenPenStore.currentNoteId();
+		if (!id) return;
+		flushEditorState();
+		var next = !currentMathOn();
+		ZenPenStore.setMath(id, next);
+		syncMathButton();
+		updateMathOverlay();
+	}
+
+	// ----------------------------------------------------------------
+	// Ghost results overlay. One absolutely-positioned layer above the
+	// article (a sibling, never a child — nothing ever enters the saved
+	// HTML), pointer-events: none. Results are keyed by line index and
+	// value so steady-state typing doesn't re-trigger the fade; new
+	// results fade in, vanished results fade out.
+	// ----------------------------------------------------------------
+	var mathOverlayEl = null;
+	var mathRafPending = false;
+	var mathFadeTimers = {};
+
+	function mathOverlay() {
+		if (!mathOverlayEl) mathOverlayEl = document.querySelector('.math-overlay');
+		return mathOverlayEl;
+	}
+
+	function isBlockEl(el) {
+		return /^(P|DIV|LI|UL|OL|BLOCKQUOTE|H[1-6]|PRE)$/.test(el.nodeName);
+	}
+
+	// Split the article into the lines the user sees: block children are
+	// lines, <br> starts a new line, nested blocks (blockquote > p) too.
+	// Each line records its text and a Range position just past its last
+	// character, for later client-rect measurement.
+	function collectMathLines(root) {
+		var lines = [];
+		var seg = [];
+
+		function flush() {
+			if (seg.length === 0) {
+				lines.push(null); // empty visual line
+				return;
 			}
-		} catch (e) { /* fall through to the DOM */ }
+			var text = '';
+			for (var i = 0; i < seg.length; i++) text += seg[i].nodeValue;
+			var last = seg[seg.length - 1];
+			lines.push({ text: text, endNode: last, endOffset: last.nodeValue.length });
+			seg = [];
+		}
 
-		// Fallback: read straight from the page (e.g. before first save)
+		function walk(node) {
+			for (var c = node.firstChild; c; c = c.nextSibling) {
+				if (c.nodeType === 3) {
+					seg.push(c);
+				} else if (c.nodeType === 1) {
+					if (c.nodeName === 'BR') {
+						flush();
+					} else if (isBlockEl(c)) {
+						flush();
+						walk(c);
+						flush();
+					} else {
+						walk(c); // inline: b, i, a, span...
+					}
+				}
+			}
+		}
+
+		walk(root);
+		flush();
+		return lines;
+	}
+
+	function updateMathOverlay() {
+		var overlay = mathOverlay();
+		if (!overlay || !document.querySelector('.content')) return;
+		if (!currentMathOn()) {
+			// Off: clear once and do no work at all.
+			overlay.innerHTML = '';
+			return;
+		}
+		if (mathRafPending) return;
+		mathRafPending = true;
+		requestAnimationFrame(function() {
+			mathRafPending = false;
+			renderMathOverlay();
+		});
+	}
+
+	function renderMathOverlay() {
+		var overlay = mathOverlay();
+		var article = document.querySelector('.content');
+		if (!overlay || !article) return;
+
+		// Track the article's box so results align with the text column.
+		overlay.style.left = article.offsetLeft + 'px';
+		overlay.style.width = article.offsetWidth + 'px';
+
+		var lines = collectMathLines(article);
+		var texts = [];
+		for (var i = 0; i < lines.length; i++) {
+			texts.push(lines[i] ? lines[i].text : '');
+		}
+
+		var results;
 		try {
-			var content = document.querySelector('.content');
-			var body = content ? content.innerText.replace(/\n{3,}/g, '\n\n').trim() : '';
-			return (shareSubject() + '\n\n' + body).trim();
+			results = ZenPen.inlineMath.evaluate(texts, navigator.language);
 		} catch (e) {
-			return '';
+			return;
+		}
+
+		// Desired set: key -> { top, left, text }
+		var wanted = {};
+		var wrapRect = overlay.getBoundingClientRect();
+		for (var j = 0; j < results.length; j++) {
+			if (results[j] === null || !lines[j]) continue;
+			var pos = lineEndRect(lines[j], overlay);
+			if (!pos) continue;
+			var key = j + ':' + results[j];
+			wanted[key] = {
+				top: pos.top,
+				left: pos.left,
+				rightAlign: pos.left === null,
+				text: '= ' + results[j]
+			};
+		}
+
+		// Fade out results that disappeared.
+		var existing = overlay.querySelectorAll('.math-result');
+		for (var k = 0; k < existing.length; k++) {
+			var el = existing[k];
+			var key2 = el.getAttribute('data-key');
+			if (wanted[key2]) {
+				// Kept: reposition silently, cancel any fade-out.
+				el.style.top = wanted[key2].top + 'px';
+				if (wanted[key2].rightAlign) {
+					el.classList.add('wrapped');
+					el.style.left = '';
+				} else {
+					el.classList.remove('wrapped');
+					el.style.left = wanted[key2].left + 'px';
+				}
+				el.classList.remove('fading');
+				clearTimeout(mathFadeTimers[key2]);
+				delete wanted[key2];
+			} else if (!el.classList.contains('fading')) {
+				el.classList.add('fading');
+				(function(node, k3) {
+					mathFadeTimers[k3] = setTimeout(function() {
+						if (node.parentNode) node.parentNode.removeChild(node);
+						delete mathFadeTimers[k3];
+					}, 180);
+				})(el, key2);
+			}
+		}
+
+		// Fade in new results.
+		for (var key3 in wanted) {
+			if (!Object.prototype.hasOwnProperty.call(wanted, key3)) continue;
+			clearTimeout(mathFadeTimers[key3]);
+			delete mathFadeTimers[key3];
+			var spec = wanted[key3];
+			var ghost = document.createElement('span');
+			ghost.className = spec.rightAlign ?
+				'math-result wrapped' : 'math-result';
+			ghost.setAttribute('data-key', key3);
+			ghost.textContent = spec.text;
+			ghost.style.top = spec.top + 'px';
+			if (!spec.rightAlign) ghost.style.left = spec.left + 'px';
+			overlay.appendChild(ghost);
+			requestAnimationFrame(function(node) {
+				return function() { node.classList.add('shown'); };
+			}(ghost));
 		}
 	}
+
+	// Measure where a line's last character ends, in overlay coordinates.
+	// The last client rect of a collapsed range at the line end is the
+	// final visual row of wrapped lines.
+	function lineEndRect(line, overlay) {
+		var range = document.createRange();
+		try {
+			range.setStart(line.endNode, line.endOffset);
+			range.collapse(true);
+		} catch (e) {
+			return null;
+		}
+		var rects = range.getClientRects();
+		var rect = null;
+		for (var i = 0; i < rects.length; i++) {
+			if (rects[i].width > 0 || rects[i].height > 0) rect = rects[i];
+		}
+		if (!rect && line.endNode.parentNode) {
+			rect = line.endNode.parentNode.getBoundingClientRect();
+		}
+		if (!rect) return null;
+
+		var wrapRect = overlay.getBoundingClientRect();
+		var left = rect.right - wrapRect.left + 8;
+		var top = rect.top - wrapRect.top;
+
+		// Past the right edge of the text column: own row underneath,
+		// right-aligned with the column.
+		var width = 40; // refined after insert
+		if (left + width > overlay.clientWidth) {
+			return { top: top + rect.height + 2, left: null }; // right-align pass
+		}
+		return { top: top, left: left };
+	}
+
+	// Recompute triggers. Input/composition cover typing; resize covers
+	// rotation; theme changes re-render too (cheap while it lasts).
+	document.addEventListener('input', function(e) {
+		if (e.target && e.target.classList &&
+			(e.target.classList.contains('content') ||
+			 e.target.classList.contains('header'))) {
+			updateMathOverlay();
+		}
+	});
+
+	document.addEventListener('compositionend', updateMathOverlay);
+
+	document.addEventListener('DOMContentLoaded', function() {
+		var btn = mathButton();
+		if (btn) btn.addEventListener('click', toggleMathMode);
+		syncMathButton();
+		updateMathOverlay();
+		// Late font load shifts metrics; re-measure once it settles.
+		if (document.fonts && document.fonts.ready) {
+			document.fonts.ready.then(updateMathOverlay);
+		}
+	});
+
+	window.addEventListener('resize', updateMathOverlay);
 
 	// New notes: ZenPen's welcome template is right for a user's very
 	// first note (it teaches the editor), but every later "New note"
@@ -370,25 +594,6 @@
 	function refreshListNotes() {
 		if (window.refreshKansoDrawer) window.refreshKansoDrawer();
 	}
-
-	// Share: hand the current note (plain text) to Android's share sheet.
-	// Pending edits are flushed first so the latest text goes out. The
-	// bridge is checked at click time, not bind time, so this works even
-	// when the bridge appears late (or in test harnesses).
-	document.addEventListener('DOMContentLoaded', function() {
-		var shareButton = document.querySelector('.share');
-		if (shareButton) {
-			shareButton.addEventListener('click', function() {
-				if (typeof window.ZenPenAndroid === 'undefined' ||
-					!window.ZenPenAndroid.shareText) {
-					console.log('Kanso: sharing needs the Android app.');
-					return;
-				}
-				flushEditorState();
-				window.ZenPenAndroid.shareText(shareSubject(), shareBodyText());
-			});
-		}
-	});
 
 	// Hardware back (and any other navigation): persist the editor
 	// before the page goes away.

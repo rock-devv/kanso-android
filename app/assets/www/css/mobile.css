@@ -135,10 +135,18 @@ button:focus {
 		transition: opacity 150ms, transform 150ms;
 	}
 
-	.ui button.share {
+	.ui button.math {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+	}
+
+	/* Math mode on for this note: the same ink-dot active language as
+	   the format bubble's buttons. */
+	.ui button.math.active {
+		opacity: 1;
+		background: rgba(128, 128, 128, 0.25);
+		border-radius: 50%;
 	}
 
 	.ui button:hover {
@@ -184,6 +192,54 @@ button:focus {
 	section {
 		padding-bottom: 30px;
 	}
+}
+
+/*********************************************
+ * INLINE MATH GHOST RESULTS
+ * One overlay above the article, never inside
+ * it — nothing here touches the saved HTML.
+ *********************************************/
+
+.content-wrap {
+	position: relative;
+}
+
+.math-overlay {
+	position: absolute;
+	top: 0;
+	pointer-events: none;
+	height: 100%;
+}
+
+.math-result {
+	position: absolute;
+	font-family: 'Lora', serif;
+	font-size: 85%;
+	font-variant-numeric: tabular-nums;
+	opacity: 0;
+	transition: opacity 150ms ease;
+	white-space: nowrap;
+	/* Ink that sits back; flips with the theme via body class */
+	color: rgba(17, 17, 17, 0.34);
+}
+
+.yang .math-result {
+	color: rgba(250, 250, 250, 0.4);
+}
+
+.math-result.shown {
+	opacity: 1;
+}
+
+.math-result.fading {
+	opacity: 0;
+}
+
+/* Line was too full: the result gets its own right-aligned row */
+.math-result.wrapped {
+	left: auto;
+	right: 0;
+	margin-top: 2px;
 }
 
 /* Very small screens: drop the bubble out of url-mode width so it fits */
