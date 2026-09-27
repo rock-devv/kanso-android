@@ -16,7 +16,8 @@
 		<link href="css/lora/lora.css" rel="stylesheet" type="text/css" />
 		<link href="css/style.css" rel="stylesheet" />
 		<link href="css/fonts.css" rel="stylesheet" />
-		<link href="css/mobile.css?v=8" rel="stylesheet" />
+		<link href="css/mobile.css?v=9" rel="stylesheet" />
+		<link href="css/drawer.css?v=9" rel="stylesheet" />
 	</head>
 
 	<body class="yin">
@@ -78,31 +79,79 @@
 					<button class="save useicons" title="Save Text">
 						&#xe003;
 					</button>
-					<button class="share" title="Share note">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-							stroke="currentColor" stroke-width="2" stroke-linecap="round"
-							stroke-linejoin="round">
-							<circle cx="18" cy="5" r="3" />
-							<circle cx="6" cy="12" r="3" />
-							<circle cx="18" cy="19" r="3" />
-							<path d="M8.6 13.5l6.8 4" />
-							<path d="M15.4 6.5l-6.8 4" />
-						</svg>
-					</button>
-					<button class="notes-back" title="All notes">
-						<svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-							stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-							stroke-linejoin="round">
-							<path d="M19 12H5" />
-							<path d="M12 19l-7-7 7-7" />
-						</svg>
-					</button>
+				<button class="share" title="Share note">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2" stroke-linecap="round"
+						stroke-linejoin="round">
+						<circle cx="18" cy="5" r="3" />
+						<circle cx="6" cy="12" r="3" />
+						<circle cx="18" cy="19" r="3" />
+						<path d="M8.6 13.5l6.8 4" />
+						<path d="M15.4 6.5l-6.8 4" />
+					</svg>
+				</button>
 				</div>
 			</div>
 		</div>
 
 		<div class="word-counter">
 			<span class="progress"></span>
+		</div>
+
+		<!-- Notes drawer: opened with a left edge-swipe or the 3-dots button.
+		     Lives on this page so writing stays the one and only screen. -->
+		<button class="drawer-fab" title="All notes" aria-label="All notes">
+			<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+				<circle cx="12" cy="5" r="2" />
+				<circle cx="12" cy="12" r="2" />
+				<circle cx="12" cy="19" r="2" />
+			</svg>
+		</button>
+
+		<div class="drawer-scrim" hidden></div>
+
+		<aside class="drawer" aria-hidden="true">
+			<header class="drawer-title">Kanso</header>
+
+			<button class="new-note">＋&nbsp; New note</button>
+
+			<div class="note-search" hidden>
+				<input
+					type="search"
+					class="note-search-input"
+					placeholder="Search notes"
+					autocomplete="off"
+				/>
+				<button class="note-search-clear" hidden>clear</button>
+			</div>
+
+			<ul class="note-list"></ul>
+
+			<p class="notes-empty" hidden>
+				Nothing here yet. Start your first note.
+			</p>
+
+			<p class="no-results" hidden>No notes match your search.</p>
+		</aside>
+
+		<div class="note-actions-backdrop" hidden>
+			<div class="note-actions">
+				<header class="note-actions-title"></header>
+				<button data-action="save">Save as file…</button>
+				<button data-action="share">Share…</button>
+				<button data-action="pin">Pin</button>
+				<button data-action="delete" class="danger">Delete…</button>
+			</div>
+		</div>
+
+		<div class="confirm-backdrop" hidden>
+			<div class="confirm-box">
+				<p class="confirm-text">Delete this note?</p>
+				<div class="confirm-buttons">
+					<button class="confirm-cancel">Cancel</button>
+					<button class="confirm-ok danger">Delete</button>
+				</div>
+			</div>
 		</div>
 
 		<section>
@@ -121,7 +170,8 @@
 		<script src="js/utils.js"></script>
 		<script src="js/editor.js"></script>
 		<script src="js/ui.js"></script>
-		<script src="js/mobile.js?v=8"></script>
+		<script src="js/mobile.js?v=9"></script>
+		<script src="js/drawer.js?v=9"></script>
 		<script type="text/javascript">
 			// Initiate ZenPen
 			ZenPen.editor.init();

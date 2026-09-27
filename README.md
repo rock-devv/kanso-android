@@ -20,13 +20,19 @@ prompted). Requires Android 7.0+.
 
 ## What it does
 
-- **Multi-note** — a notes list home screen; create, open, delete (5s undo).
+- **One writing screen** — the notes list is a drawer: swipe in from the
+  left edge or tap the ⋮ button. Tap a note to open it, swipe it for quick
+  actions (delete with confirmation, pin), or hold it for the full menu
+  (save, share, pin, delete with undo).
 - **Search & pin** — live search over titles *and* note bodies with
   highlighted hits and snippets; pin notes to keep them at the top.
-- **Share** — the editor's share button, or long-press a note in the list,
-  hands the note to Android's share sheet.
+- **Share** — the editor's share button, or a note's hold menu in the
+  drawer, hands the note to Android's share sheet.
 - **Save** — export any note as Markdown, HTML, or plain text through the
   system file picker.
+- **Native-feeling text selection** — Android's copy/cut menu is
+  suppressed while Kanso's own format bubble (bold, italic, quote, link)
+  opens below your selection, clear of the system handles.
 - **Auto Backup** — notes mirror to `files/zenpen-notes.json` and ride
   Android Auto Backup / device transfer; a fresh install re-imports them
   automatically (the live store always wins, so restores never clobber

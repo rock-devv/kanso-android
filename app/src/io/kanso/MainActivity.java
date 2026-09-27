@@ -172,9 +172,10 @@ public class MainActivity extends Activity {
 
 		webView.addJavascriptInterface(new Bridge(), "ZenPenAndroid");
 
-		// The notes list is the home screen; individual notes live on
-		// index.html#n<id> and Android's back button walks this history.
-		webView.loadUrl("file:///android_asset/www/notes.html");
+		// The editor is the home screen now; the notes list is a drawer
+		// inside it. Android's back button walks the drawer's history
+		// entries first (drawer.js pushes one when it opens).
+		webView.loadUrl("file:///android_asset/www/index.html");
 	}
 
 	/** Tells the page whether the soft keyboard is up. */
@@ -377,6 +378,25 @@ public class MainActivity extends Activity {
 			webView.evaluateJavascript(
 				"window.onZenPenSystemThemeChanged && window.onZenPenSystemThemeChanged("
 					+ systemIsDark + ")", null);
+		}
+	}
+
+	@Override
+	public void onActionModeStarted(android.view.ActionMode mode) {
+		super.onActionModeStarted(mode);
+
+		// Text selection inside the editor: strip Android's copy/cut/
+		// share menu so only the text selection handles remain. Kanso's
+		// own format bubble (bold/italic/quote/link) is the toolbar.
+		android.view.Menu menu = mode.getMenu();
+		if (menu != null) {
+			menu.clear();
+		}
+		if (Build.VERSION.SDK_INT >= 23 && mode.getType() ==
+				android.view.ActionMode.TYPE_FLOATING) {
+			// Floating toolbars can't be styled from the web side; with the
+			// menu cleared it renders as a bare bar, so close it entirely.
+			mode.finish();
 		}
 	}
 

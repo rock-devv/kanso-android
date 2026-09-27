@@ -6,7 +6,6 @@
 //   3. shows the format bubble on touch-based text selection,
 //   4. autosaves on mobile IME input (keyup alone misses composition),
 //   5. routes "save" and link taps to the host app (ZenPenAndroid bridge).
-
 (function() {
 	var isAndroidBridge = typeof window.ZenPenAndroid !== 'undefined';
 
@@ -34,7 +33,10 @@
 	}
 
 	function applyTheme(dark) {
-		document.body.className = dark ? 'yang' : 'yin';
+		// classList, not className: the body also carries state classes
+		// like 'drawer-open', which must survive theme flips.
+		document.body.classList.toggle('yang', dark);
+		document.body.classList.toggle('yin', !dark);
 	}
 
 	(function bootstrapTheme() {
@@ -59,6 +61,8 @@
 		if (explicitThemePref() === null) {
 			applyTheme(!!systemIsDark);
 		}
+		// The drawer picks up ink/paper variables from the body class
+		if (window.refreshKansoDrawer) window.refreshKansoDrawer();
 	};
 
 	// ----------------------------------------------------------------
@@ -137,7 +141,7 @@
 		e.stopPropagation();
 		e.preventDefault();
 
-		var dark = document.body.className === 'yang';
+		var dark = document.body.classList.contains('yang');
 		dark = !dark;
 		applyTheme(dark);
 		try {
@@ -236,6 +240,7 @@
 		saveDebounce = setTimeout(function() {
 			ZenPen.editor.saveState();
 			splitLongTextNodes();
+			refreshListNotes();
 		}, 300);
 	});
 
@@ -260,12 +265,16 @@
 			var textOptions = document.querySelector('.text-options');
 			if (!textOptions) return;
 
-			var range = sel.getRangeAt(0);
-			var rect = range.getBoundingClientRect();
-			if (rect.width === 0 && rect.height === 0) return;
-
-			textOptions.style.top = rect.top - 5 + window.pageYOffset + 'px';
-			textOptions.style.left = (rect.left + rect.right) / 2 + 'px';
+			// Position via the editor's own placer (bubble now sits BELOW
+			// the selection, arrow up — the desktop mouse path uses the
+			// same logic). Fallback keeps the math inline for safety.
+			if (window.ZenPen && ZenPen.editor &&
+				ZenPen.editor.updateBubblePosition) {
+				ZenPen.editor.updateBubblePosition();
+			} else {
+				textOptions.style.top = rect.bottom + 12 + window.pageYOffset + 'px';
+				textOptions.style.left = (rect.left + rect.right) / 2 + 'px';
+			}
 			textOptions.className = 'text-options active';
 		}, 250);
 	});
@@ -355,21 +364,18 @@
 		};
 	}
 
-	// Back-to-notes-list button + pending-edit flush. Pure web behavior,
-	// so it's wired regardless of the native bridge.
-	document.addEventListener('DOMContentLoaded', function() {
-		var back = document.querySelector('.notes-back');
-		if (back) {
-			back.addEventListener('click', function() {
-				flushEditorState();
-				location.href = 'notes.html';
-			});
-		}
+	// Keep the notes drawer current: call after every autosave, and on
+	// demand (theme flips, etc.). Rewriting the list is cheap and keeps
+	// timestamps/edits from other notes accurate without navigation.
+	function refreshListNotes() {
+		if (window.refreshKansoDrawer) window.refreshKansoDrawer();
+	}
 
-		// Share: hand the current note (plain text) to Android's share
-		// sheet. Pending edits are flushed first so the latest text goes out.
-		// The bridge is checked at click time, not bind time, so the button
-		// also works when the bridge appears late (or in test harnesses).
+	// Share: hand the current note (plain text) to Android's share sheet.
+	// Pending edits are flushed first so the latest text goes out. The
+	// bridge is checked at click time, not bind time, so this works even
+	// when the bridge appears late (or in test harnesses).
+	document.addEventListener('DOMContentLoaded', function() {
 		var shareButton = document.querySelector('.share');
 		if (shareButton) {
 			shareButton.addEventListener('click', function() {

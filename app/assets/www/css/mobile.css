@@ -5,6 +5,26 @@
  *********************************************/
 
 /*********************************************
+ * TOUCH FEEL
+ * Kill the WebView's default tap flash and
+ * give every control a quiet pressed state
+ * instead.
+ *********************************************/
+
+* {
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	-webkit-tap-highlight-color: transparent;
+}
+
+button, input, a, li, span {
+	-webkit-tap-highlight-color: transparent;
+}
+
+button:focus {
+	outline: none;
+}
+
+/*********************************************
  * SCROLLBARS
  * Hidden on every screen (editor + notes, any
  * width) while scrolling itself still works.
@@ -82,6 +102,12 @@
 		transition: transform 250ms ease-in-out, opacity 250ms ease-in-out;
 	}
 
+	/* The bar's paper/ink paint lives on .top; give the theme flip a
+	   smooth glide instead of a hard snap. */
+	.ui .top {
+		transition: background-color 300ms ease;
+	}
+
 	/* Keyboard open: slide the bar out of the way (native reports the
 	   real IME state; a resize heuristic covers plain-browser use) */
 	.ui.bar-hidden .wrapper {
@@ -104,9 +130,11 @@
 		width: 48px;
 		height: 48px;
 		font-size: 24px;
+		-webkit-tap-highlight-color: transparent;
+		outline: none;
+		transition: opacity 150ms, transform 150ms;
 	}
 
-	.ui button.notes-back,
 	.ui button.share {
 		display: inline-flex;
 		align-items: center;
@@ -117,41 +145,21 @@
 		opacity: 1;
 	}
 
-	/* Blend the bar into the page instead of drawing a seam */
+	/* Pressed: a small squeeze, no system overlay */
+	.ui button:active {
+		opacity: 0.85;
+		transform: scale(0.9);
+	}
+
+	/* Blend the bar into the page instead of drawing a seam.
+	   The background-color transition above makes theme flips glide
+	   from paper to ink instead of snapping. */
 	.yin .ui .top {
 		background: #fdfdfd;
 	}
 
 	.yang .ui .top {
 		background: #111;
-	}
-
-	/* Narrow phones: 6×48px buttons + gaps would overflow 360px */
-	@media (max-width: 415px) {
-		.ui .top {
-			gap: 14px;
-		}
-	}
-
-	@media (max-width: 370px) {
-		.ui .top {
-			gap: 7px;
-		}
-
-		.ui button {
-			width: 42px;
-			height: 46px;
-		}
-	}
-
-	@media (max-width: 330px) {
-		.ui .top {
-			gap: 3px;
-		}
-
-		.ui button {
-			width: 38px;
-		}
 	}
 
 	/* Keep the writing area clear of the bar (incl. iOS home bar).
@@ -188,4 +196,31 @@
 	.options.url-mode input {
 		width: calc(100vw - 60px);
 	}
+}
+
+/*********************************************
+ * FORMAT BUBBLE: BELOW THE SELECTION
+ * Desktop ZenPen floated the bubble above the
+ * selected text with a downward arrow. On
+ * phones that collides with the system
+ * selection handles, so the bubble now docks
+ * below the selection and its arrow points
+ * up. editor.js positions the anchor point;
+ * this flips the arrow and clearance.
+ *********************************************/
+
+.options {
+	margin-top: 14px;
+}
+
+.options:before {
+	top: -15px;
+	bottom: auto;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid rgba(0, 0, 0, 0.9);
+}
+
+.yang .options:before {
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid rgba(255, 255, 255, 0.9);
 }

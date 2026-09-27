@@ -142,7 +142,11 @@ ZenPen.editor = (function() {
 		var range = selection.getRangeAt(0);
 		var boundary = range.getBoundingClientRect();
 		
-		textOptions.style.top = boundary.top - 5 + window.pageYOffset + "px";
+		// ZenPen originally floated the bubble ABOVE the selection with
+		// its arrow on the bottom edge. On phones that fights the native
+		// selection handles and the copy/cut chrome, so the arrow now
+		// points UP from below: the bubble sits under the selection.
+		textOptions.style.top = boundary.bottom + 12 + window.pageYOffset + "px";
 		textOptions.style.left = (boundary.left + boundary.right)/2 + "px";
 	}
 
@@ -371,7 +375,11 @@ ZenPen.editor = (function() {
 	return {
 		init: init,
 		saveState: saveState,
-		getWordCount: getWordCount
+		getWordCount: getWordCount,
+		// Exposed so the mobile layer can reposition the bubble after
+		// touch-driven selections (desktop mouse paths run editor.js's
+		// own handlers).
+		updateBubblePosition: updateBubblePosition
 	}
 
 })();
